@@ -1,0 +1,11 @@
+docker build . -t service1
+
+docker build . -t service2
+
+docker network create avl-net
+
+docker run -d -p 8080:8080 service1
+
+docker run -d -p 8090:8080 service2
+
+curl http://localhost:8090 -d "http://api.open-notify.org/astros.json" -i
