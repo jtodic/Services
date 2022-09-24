@@ -11,5 +11,16 @@ docker run --net avl-net --name service2 -d -p 8081:8080 service2
 curl http://localhost:8081 -d "http://api.open-notify.org/astros.json" -i
 
 
-./deployment.sh -1 0.3 -2 0.3 
+./deployment.sh -1 1.0 -2 1.0 
 
+minikube start
+
+kubectl apply -f .
+
+kubectl get pods
+kubectl get deployments
+
+kubectl get svc
+minikube service service-for-service2 --url
+
+curl http://127.0.0.1:57050 -d "http://api.open-notify.org/astros.json" -i
