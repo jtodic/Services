@@ -9,3 +9,4 @@ docker run --net avl-net --name service1 -d -p 8080:8080 service1
 docker run --net avl-net --name service2 -d -p 8081:8080 service2
 
 curl http://localhost:8081 -d "http://api.open-notify.org/astros.json" -i
+-----------------------------------------------------------------------------
