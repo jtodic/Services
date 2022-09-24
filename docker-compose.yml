@@ -1,0 +1,24 @@
+version: "3.8"
+services:
+  service1:
+    image: jtodic/service1:VERSION_PLACEHOLDER_INJECTED_AT_BUILD_TIME_1
+    container_name: service1
+    ports:
+      - 8080:8080
+    networks:
+      - avl-net
+  service2:
+    image: jtodic/service2:VERSION_PLACEHOLDER_INJECTED_AT_BUILD_TIME_2
+    container_name: service2
+    depends_on:
+      - service1
+    ports:
+      - 8081:8080
+    networks:
+      - avl-net
+networks:
+  avl-net:
+
+  
+  
+  
