@@ -1,0 +1,3 @@
+deployment:
+  image: "jtodic/service1"
+  tag: "1.0"

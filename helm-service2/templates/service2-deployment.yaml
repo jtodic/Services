@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: service2
+  name: service2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service2
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app.network/avl-net: "true"
+        app: service2
+    spec:
+      containers:
+        - image: {{ .Values.deployment.image }}:{{ .Values.deployment.tag }}
+          name: service2
+          ports:
+            - containerPort: 8080
+          resources: {}
+      restartPolicy: Always
