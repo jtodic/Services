@@ -16,11 +16,21 @@ curl http://localhost:8081 -d "http://api.open-notify.org/astros.json" -i
 minikube start
 
 kubectl apply -f .
+kubectl delete -f .
+
 
 kubectl get pods
 kubectl get deployments
 
 kubectl get svc
-minikube service service-for-service2 --url
+minikube service service2 --url
 
-curl http://127.0.0.1:57050 -d "http://api.open-notify.org/astros.json" -i
+curl http://127.0.0.1:52744 -d "http://api.open-notify.org/astros.json" -i
+
+helm create helm-service1
+
+helm install helm-service1 helm-service1
+
+helm delete helm-service1
+
+./deployment-helm.sh -1 1.0 -2 1.0 
