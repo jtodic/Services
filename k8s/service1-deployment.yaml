@@ -17,7 +17,7 @@ spec:
         app: service1
     spec:
       containers:
-        - image: jtodic/service1:1.0
+        - image: jtodic/service1:VERSION_PLACEHOLDER_INJECTED_AT_BUILD_TIME_1
           name: service1
           ports:
             - containerPort: 8080
