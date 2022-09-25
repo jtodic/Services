@@ -16,6 +16,7 @@ The third part of the project is the k8s folder, which contains the deployment-k
 The fourth part of the project is the helm-service1 and helm-service2 folders with helm charts that are deployed with deployment-helm.sh:
 "./deployment-helm.sh -1 1.0 -2 1.0"  where the versions of individual MS are inserted.
 
+'''bash
 .
 ├── Jenkinsfile
 ├── README.md
@@ -52,3 +53,5 @@ The fourth part of the project is the helm-service1 and helm-service2 folders wi
 └── service2
     ├── Dockerfile
     └── entrypoint.py
+
+'''
