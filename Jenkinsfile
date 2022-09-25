@@ -6,16 +6,16 @@ properties([
                 description: 'SYSTEM ONLY - reloads the pipeline without running any steps so that new pipeline changes can be shown', 
                 name: 'RELOAD_PIPELINE'
             ),
-            choice(choices: ['---', 'Services'], description: 'Project to deploy', name: 'PROJECT'),
+            choice(choices: ['---', 'service1', 'service2'], description: 'MS version to build', name: 'PROJECT1'),
             [
                         $class: 'CascadeChoiceParameter',
                         choiceType: 'PT_SINGLE_SELECT',
                         description: '',
                         filterLength: 1,
                         filterable: true,
-                        name: 'GIT_TAG',
+                        name: 'GIT_TAG1',
                         randomName: 'choice-parameter-10644504575940977',
-                        referencedParameters: 'PROJECT',
+                        referencedParameters: 'PROJECT1',
                         script: [
                                 $class: 'GroovyScript',
                                 fallbackScript: [classpath: [], sandbox: false, script: ''],
@@ -24,8 +24,10 @@ properties([
                                         sandbox: false,
                                         script: '''
                         def proc;
-                        if (PROJECT.equals("Services")) {
-                            proc = "git ls-remote --tags --refs https://github.com/jtodic/Services.git".execute()
+                        if (PROJECT1.equals("service1")) {
+                            proc = "git ls-remote --tags --refs https://github.com/jtodic/service1.git".execute()
+                        } else if (PROJECT1.equals("service2")) {
+                            proc = "git ls-remote --tags --refs https://github.com/jtodic/service2.git".execute()
                         } else {
                             return ["---"]
                         }
@@ -39,6 +41,42 @@ properties([
                                 ]
                         ]
             ],
+            choice(choices: ['---', 'service1', 'service2'], description: 'Second MS version to build', name: 'PROJECT2'),
+            [
+                        $class: 'CascadeChoiceParameter',
+                        choiceType: 'PT_SINGLE_SELECT',
+                        description: '',
+                        filterLength: 1,
+                        filterable: true,
+                        name: 'GIT_TAG2',
+                        randomName: 'choice-parameter-10644504575940112',
+                        referencedParameters: 'PROJECT2',
+                        script: [
+                                $class: 'GroovyScript',
+                                fallbackScript: [classpath: [], sandbox: false, script: ''],
+                                script: [
+                                        classpath: [],
+                                        sandbox: false,
+                                        script: '''
+                        def proc;
+                        if (PROJECT2.equals("service1")) {
+                            proc = "git ls-remote --tags --refs https://github.com/jtodic/service1.git".execute()
+                        } else if (PROJECT2.equals("service2")) {
+                            proc = "git ls-remote --tags --refs https://github.com/jtodic/service2.git".execute()
+                        } else {
+                            return ["---"]
+                        }
+                        
+                        def errorStream = new StringBuffer()
+                        proc.consumeProcessErrorStream(errorStream)
+                        println(errorStream)
+                        
+                        return proc.text.split("\\\\n").collect{ it -> it.split("\\\\t")[1].replaceAll('refs/tags/v', '') }
+                    '''
+                                ]
+                        ]
+            ],
+
         ]
 
     )
@@ -74,13 +112,21 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                dir('Services-repo') {
+                dir("${PROJECT1}-repo") {
                 checkout([
                 $class: 'GitSCM', 
-                branches: [[name: '*/main']], 
+                branches: [[name: 'refs/tags/v${GIT_TAG1}']], 
                 extensions: [], 
-                userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/jtodic/Services.git']]]) 
+                userRemoteConfigs: [[credentialsId: '', url: "https://github.com/jtodic/${PROJECT1}.git"]]]) 
                 }
+                dir("${PROJECT2}-repo") {
+                checkout([
+                $class: 'GitSCM', 
+                branches: [[name: 'refs/tags/v${GIT_TAG2}']], 
+                extensions: [], 
+                userRemoteConfigs: [[credentialsId: '', url: "https://github.com/jtodic/${PROJECT2}.git"]]]) 
+                }
+
             }
         }
 
@@ -88,10 +134,10 @@ pipeline {
             steps {
                 script {
                     sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin; \
-                        cd "${WORKSPACE}"/Services-repo/service1 ; \
-                        docker build . -t jtodic/service1 ; \
-                        cd "${WORKSPACE}"/Services-repo/service2 ; \
-                        docker build . -t jtodic/service2'
+                        cd "${WORKSPACE}"/"${PROJECT1}"-repo ; \
+                        docker build . -t jtodic/"${PROJECT1}" ; \
+                        cd "${WORKSPACE}"/"${PROJECT2}"-repo ; \
+                        docker build . -t jtodic/"${PROJECT2}"'
                 }
             }
         }
@@ -123,17 +169,17 @@ pipeline {
         stage('Publish docker images') {
             steps {
                 script {
-                    sh 'docker image push jtodic/service1:latest; \
-                        docker image tag jtodic/service1:latest jtodic/service1:"${GIT_TAG}"; \
-                        docker image push jtodic/service1:"${GIT_TAG}"; \
-                        docker image rm jtodic/service1:latest; \
-                        docker image rm jtodic/service1:"${GIT_TAG}"'
+                    sh 'docker image push jtodic/"${PROJECT1}":latest; \
+                        docker image tag jtodic/"${PROJECT1}":latest jtodic/"${PROJECT1}":"${GIT_TAG1}"; \
+                        docker image push jtodic/"${PROJECT1}":"${GIT_TAG1}"; \
+                        docker image rm jtodic/"${PROJECT1}":latest; \
+                        docker image rm jtodic/"${PROJECT1}":"${GIT_TAG1}"'
 
-                    sh 'docker image push jtodic/service2:latest; \
-                        docker image tag jtodic/service2:latest jtodic/service2:"${GIT_TAG}"; \
-                        docker image push jtodic/service2:"${GIT_TAG}"; \
-                        docker image rm jtodic/service2:latest; \
-                        docker image rm jtodic/service2:"${GIT_TAG}"'
+                    sh 'docker image push jtodic/"${PROJECT2}":latest; \
+                        docker image tag jtodic/"${PROJECT2}":latest jtodic/"${PROJECT2}":"${GIT_TAG2}"; \
+                        docker image push jtodic/"${PROJECT2}":"${GIT_TAG2}"; \
+                        docker image rm jtodic/"${PROJECT2}":latest; \
+                        docker image rm jtodic/"${PROJECT2}":"${GIT_TAG2}"'
                     
                 }
             }
