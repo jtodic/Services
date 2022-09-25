@@ -25,7 +25,7 @@ kubectl get deployments
 kubectl get svc
 minikube service service2 --url
 
-curl http://127.0.0.1:52744 -d "http://api.open-notify.org/astros.json" -i
+curl http://127.0.0.1:53419 -d "http://api.open-notify.org/astros.json" -i
 
 helm create helm-service1
 
@@ -33,4 +33,8 @@ helm install helm-service1 helm-service1
 
 helm delete helm-service1
 
+
+./deployment-k8s.sh -1 1.0 -2 1.0 
+
 ./deployment-helm.sh -1 1.0 -2 1.0 
+
